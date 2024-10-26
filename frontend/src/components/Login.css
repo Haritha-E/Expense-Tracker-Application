@@ -1,0 +1,138 @@
+/* Centering the login container */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); /* Soft gradient background */
+    font-family: 'Arial', sans-serif; /* Set a clean font */
+    padding: 20px; 
+  }
+  
+  /* Styling the login box */
+  .login-box {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
+  }
+    
+  /* Styling for the login image */
+  .login-image {
+    width: 50%;
+    height: 100%; /* Ensures full height */
+    object-fit: cover; /* Maintain aspect ratio */
+    transition: transform 0.3s ease; /* Smooth scale effect */
+  }
+  
+  
+  /* Styling for the form section */
+  .login-form {
+    padding: 40px; /* Increased padding for comfort */
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Heading styles */
+  h2 {
+    font-size: 28px;
+    margin-bottom: 16px;
+    color: #333;
+    font-weight: bold; /* Stronger weight for emphasis */
+    text-align: center; /* Center align for a balanced look */
+  }
+  
+  /* Paragraph styles */
+  p {
+    margin-bottom: 24px;
+    font-size: 16px;
+    color: #555;
+    text-align: center; /* Center align for better readability */
+  }
+  
+  /* Input group styles */
+  .input-group {
+    margin-bottom: 20px; /* Spacing between input groups */
+  }
+  
+  /* Label styles */
+  label {
+    margin-bottom: 8px; /* Spacing between label and input */
+    font-weight: 600;
+    color: #333;
+    display: block; /* Make label a block element */
+  }
+  
+  /* Input field styles */
+  input {
+    width: 100%;
+    padding: 14px; /* Comfortable padding */
+    margin-bottom: 10px;
+    border: 2px solid #ddd; /* Thicker border for visibility */
+    border-radius: 8px;
+    font-size: 16px; /* Consistent font size */
+    transition: border 0.3s, box-shadow 0.3s; /* Transition for interaction */
+  }
+  
+  /* Input focus effect */
+  input:focus {
+    border: 2px solid #007bff; /* Stronger border color on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Soft blue shadow */
+    outline: none; /* Remove default outline */
+  }
+  
+  /* Button styles */
+  button {
+    width: 100%;
+    padding: 14px; /* Increased padding */
+    background-color: #007bff; /* Primary button color */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold; /* Bold font for emphasis */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+  }
+  
+  /* Button hover effect */
+  button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+  }
+  
+  /* Link styles */
+  a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500; /* Slightly bolder font */
+    transition: color 0.3s ease; /* Transition for hover effects */
+  }
+  
+  /* Link hover effect */
+  a:hover {
+    color: #0056b3; /* Darker blue on hover */
+    text-decoration: underline;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .login-box {
+      flex-direction: column; /* Stack the image and form on smaller screens */
+      width: 90%; /* Full width on mobile */
+    }
+    
+    .login-image {
+      width: 100%; /* Full width on mobile */
+      height: 200px; /* Fixed height for mobile */
+    }
+  
+    .login-form {
+      width: 100%; /* Full width on mobile */
+    }
+  }
+  

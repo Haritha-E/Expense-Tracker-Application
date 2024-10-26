@@ -1,0 +1,108 @@
+.expense-list-container {
+    padding: 40px;
+    max-width: 900px;
+    margin: auto;
+    background: linear-gradient(135deg, #e0f7fa, #80deea); /* Cool blue gradient */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    text-align: center;
+    color: #004d40;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #f9f9f9; /* Light grey table background */
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  table th, table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  table th {
+    background-color: #00838f; /* Bold teal header */
+    color: white;
+  }
+  
+  table tbody tr:nth-child(even) {
+    background-color: #e0f2f1; /* Soft teal row background */
+  }
+  
+  table tbody tr:hover {
+    background-color: #b2ebf2; /* Slightly brighter hover effect */
+  }
+  
+  button {
+    padding: 8px 16px;
+    background: linear-gradient(90deg, #00796b, #004d40); /* Dark greenish-teal gradient for buttons */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: background 0.3s ease;
+  }
+  
+  button:hover {
+    background: linear-gradient(90deg, #004d40, #00251a);
+  }
+  
+  .update-form {
+    padding: 20px;
+    background-color: #e0f7fa; /* Light blue background for the form */
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .update-form h3 {
+    color: #004d40;
+    text-align: center;
+  }
+  
+  .update-form input, .update-form select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #f1f1f1; /* Light grey background inside inputs */
+  }
+  
+  .update-form button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #00796b, #004d40); /* Bold greenish-teal for update button */
+    border: none;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .update-form button:hover {
+    background: linear-gradient(90deg, #004d40, #00251a);
+  }
+  
+  .update-form button.cancel {
+    background: #757575; /* Neutral grey for cancel button */
+    margin-top: 0;
+  }
+  
+  .update-form button.cancel:hover {
+    background: #616161;
+  }
+  
