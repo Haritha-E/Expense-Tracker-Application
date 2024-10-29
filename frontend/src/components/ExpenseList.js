@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
 import './ExpenseList.css';
 
 const ExpenseList = () => {
@@ -9,32 +10,33 @@ const ExpenseList = () => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
+  const [searchDate, setSearchDate] = useState('');
+  const [sortBy, setSortBy] = useState('amount'); // 'amount' or 'date'
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
 
   useEffect(() => {
     const fetchExpenses = async () => {
-      const token = localStorage.getItem('token'); // Get token from localStorage
+      const token = localStorage.getItem('token');
       try {
         const response = await axios.get('http://localhost:5000/api/expenses', {
-          headers: { Authorization: `Bearer ${token}` }, // Include token in headers
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setExpenses(response.data); // Set expenses in state
+        setExpenses(response.data);
       } catch (error) {
         console.error('Error fetching expenses:', error);
       }
     };
-
     fetchExpenses();
   }, []);
 
   const handleDelete = async (id) => {
-    const token = localStorage.getItem('token'); // Get token from localStorage
-    console.log('Deleting expense with ID:', id); // Log the ID being deleted
+    const token = localStorage.getItem('token');
     try {
       await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }, // Include token in headers
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setExpenses(expenses.filter(expense => expense._id !== id)); // Update local state
-      console.log('Expense deleted successfully'); // Log success message
+      setExpenses(expenses.filter(expense => expense._id !== id));
     } catch (error) {
       console.error('Error deleting expense:', error.response ? error.response.data : error.message);
     }
@@ -50,18 +52,12 @@ const ExpenseList = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token'); // Get token from localStorage
+    const token = localStorage.getItem('token');
     try {
-      const updatedExpense = {
-        description,
-        amount: Number(amount), // Ensure amount is a number
-        category,
-      };
+      const updatedExpense = { description, amount: Number(amount), category };
       await axios.put(`http://localhost:5000/api/expenses/${currentExpense._id}`, updatedExpense, {
-        headers: { Authorization: `Bearer ${token}` }, // Include token in headers
-      }); // Send PUT request to update the expense
-
-      // Update local state with the new expense data
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setExpenses(expenses.map(expense => 
         expense._id === currentExpense._id ? { ...expense, ...updatedExpense } : expense
       ));
@@ -79,16 +75,65 @@ const ExpenseList = () => {
     setIsEditing(false);
   };
 
-  // Calculate total expenses
   const calculateTotalExpenses = () => {
     return expenses.reduce((total, expense) => total + expense.amount, 0);
+  };
+
+  // Filter expenses based on search inputs
+  const filteredExpenses = expenses.filter(expense => {
+    const matchesCategory = searchCategory ? expense.category === searchCategory : true;
+    const matchesDate = searchDate ? new Date(expense.createdAt).toISOString().slice(0, 10) === searchDate : true;
+    return matchesCategory && matchesDate;
+  });
+
+  // Sort expenses based on selected criteria
+  const sortedExpenses = [...filteredExpenses].sort((a, b) => {
+    const aValue = sortBy === 'amount' ? a.amount : new Date(a.createdAt).getTime();
+    const bValue = sortBy === 'amount' ? b.amount : new Date(b.createdAt).getTime();
+
+    return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+  });
+
+  const handleClearFilters = () => {
+    setSearchCategory('');
+    setSearchDate('');
+    setSortBy('amount');
+    setSortOrder('asc');
   };
 
   return (
     <div>
       <h2>Your Expenses</h2>
-      {expenses.length === 0 ? (
-        <p>No expenses added yet.</p>
+      <div className="search-bar">
+        <div className="filter-container">
+          <select onChange={(e) => setSearchCategory(e.target.value)} value={searchCategory}>
+            <option value="">All Categories</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Other">Other</option>
+          </select>
+          <input 
+            type="date" 
+            value={searchDate} 
+            onChange={(e) => setSearchDate(e.target.value)} 
+          />
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
+        <div className="sort-container">
+          <select onChange={(e) => setSortBy(e.target.value)} value={sortBy}>
+            <option value="amount">Sort by Amount</option>
+            <option value="date">Sort by Date</option>
+          </select>
+          <button onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+            {sortOrder === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDownAlt />}
+          </button>
+        </div>
+      </div>
+
+      {sortedExpenses.length === 0 ? (
+        <p>No expenses found for the selected filters.</p>
       ) : (
         <>
           <table>
@@ -102,10 +147,10 @@ const ExpenseList = () => {
               </tr>
             </thead>
             <tbody>
-              {expenses.map(expense => (
+              {sortedExpenses.map(expense => (
                 <tr key={expense._id}>
                   <td>{expense.description}</td>
-                  <td>{expense.amount}</td>
+                  <td>₹{expense.amount}</td>
                   <td>{expense.category}</td>
                   <td>{new Date(expense.createdAt).toLocaleDateString()}</td>
                   <td>
@@ -116,7 +161,7 @@ const ExpenseList = () => {
               ))}
             </tbody>
           </table>
-          <h3>Total Expenses: ${calculateTotalExpenses().toFixed(2)}</h3> {/* Display total expenses */}
+          <h3>Total Expenses: ₹{calculateTotalExpenses().toFixed(2)}</h3>
         </>
       )}
 

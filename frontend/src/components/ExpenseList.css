@@ -53,6 +53,35 @@
     transition: background 0.3s ease;
   }
   
+  .search-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .filter-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .filter-container select,
+  .filter-container input,
+  .filter-container button {
+    margin-right: 10px;
+  }
+  
+  .sort-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .sort-container select,
+  .sort-container button {
+    margin-left: 10px;
+  }
+
+  
   button:hover {
     background: linear-gradient(90deg, #004d40, #00251a);
   }

@@ -1,4 +1,11 @@
 /* Centering the login container */
+.error-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+
 .login-container {
     display: flex;
     justify-content: center;

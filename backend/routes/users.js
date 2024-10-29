@@ -5,6 +5,7 @@ const User = require('../models/User'); // Assuming a User model is defined
 
 const router = express.Router();
 
+// user.js route file
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
 
@@ -20,9 +21,10 @@ router.post('/register', async (req, res) => {
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Error registering user:', error);
-    res.status(500).json({ message: 'Error registering user', error: error.message }); // Send detailed error message
+    res.status(500).json({ message: 'Error registering user', error: error.message });
   }
 });
+
 
 
 router.post('/login', async (req, res) => {

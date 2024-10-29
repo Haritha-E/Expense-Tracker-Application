@@ -5,8 +5,17 @@ const API_URL = 'http://localhost:5000/api'; // Update this if you deploy to a d
 
 
 export const registerUser = async (userData) => {
-  return await axios.post('http://localhost:5000/api/register', userData); // Ensure the URL is correct
+  const response = await fetch(`${API_URL}/users/register`, { // Adjust the URL as needed
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
+  return response; // Ensure you're returning the full response
 };
+
+
 
 
 // Login user

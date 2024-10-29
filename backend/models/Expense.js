@@ -3,12 +3,8 @@ const Schema = mongoose.Schema;
 
 const expenseSchema = new Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId, // Refers to the user's ID
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-  },
-  description: {
-    type: String,
     required: true,
   },
   amount: {
@@ -21,7 +17,11 @@ const expenseSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    required: true, // Updated to make the date required and set by the user
+  },
+  description: {
+    type: String,
+    required: false,
   }
 });
 
