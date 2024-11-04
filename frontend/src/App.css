@@ -15,6 +15,22 @@ h1 {
   margin: 40px;
 }
 
+button {
+  padding: 8px 16px;
+  background: linear-gradient(90deg, #00796b, #004d40); /* Dark greenish-teal gradient for buttons */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+  transition: background 0.3s ease;
+}
+
+
+button:hover {
+  background: linear-gradient(90deg, #004d40, #00251a);
+}
+
 .card {
   background-color: white;
   border-radius: 10px;

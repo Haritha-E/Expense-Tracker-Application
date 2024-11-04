@@ -42,17 +42,6 @@
     background-color: #b2ebf2; /* Slightly brighter hover effect */
   }
   
-  button {
-    padding: 8px 16px;
-    background: linear-gradient(90deg, #00796b, #004d40); /* Dark greenish-teal gradient for buttons */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 5px;
-    transition: background 0.3s ease;
-  }
-  
   .search-bar {
     display: flex;
     justify-content: space-between;
@@ -81,10 +70,6 @@
     margin-left: 10px;
   }
 
-  
-  button:hover {
-    background: linear-gradient(90deg, #004d40, #00251a);
-  }
   
   .update-form {
     padding: 20px;

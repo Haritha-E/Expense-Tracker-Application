@@ -10,10 +10,11 @@ const ExpenseList = () => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
+  const [date, setDate] = useState('');
   const [searchCategory, setSearchCategory] = useState('');
   const [searchDate, setSearchDate] = useState('');
-  const [sortBy, setSortBy] = useState('amount'); // 'amount' or 'date'
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [sortBy, setSortBy] = useState('amount');
+  const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -44,9 +45,10 @@ const ExpenseList = () => {
 
   const handleEdit = (expense) => {
     setCurrentExpense(expense);
-    setDescription(expense.description);
+    setDescription(expense.description || '');
     setAmount(expense.amount);
     setCategory(expense.category);
+    setDate(new Date(expense.createdAt).toISOString().slice(0, 10)); // Set date for editing
     setIsEditing(true);
   };
 
@@ -54,7 +56,12 @@ const ExpenseList = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const updatedExpense = { description, amount: Number(amount), category };
+      const updatedExpense = {
+        description,
+        amount: Number(amount),
+        category,
+        createdAt: date,
+      };
       await axios.put(`http://localhost:5000/api/expenses/${currentExpense._id}`, updatedExpense, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -72,6 +79,7 @@ const ExpenseList = () => {
     setDescription('');
     setAmount('');
     setCategory('');
+    setDate('');
     setIsEditing(false);
   };
 
@@ -79,14 +87,12 @@ const ExpenseList = () => {
     return expenses.reduce((total, expense) => total + expense.amount, 0);
   };
 
-  // Filter expenses based on search inputs
   const filteredExpenses = expenses.filter(expense => {
     const matchesCategory = searchCategory ? expense.category === searchCategory : true;
     const matchesDate = searchDate ? new Date(expense.createdAt).toISOString().slice(0, 10) === searchDate : true;
     return matchesCategory && matchesDate;
   });
 
-  // Sort expenses based on selected criteria
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
     const aValue = sortBy === 'amount' ? a.amount : new Date(a.createdAt).getTime();
     const bValue = sortBy === 'amount' ? b.amount : new Date(b.createdAt).getTime();
@@ -112,6 +118,11 @@ const ExpenseList = () => {
             <option value="Transport">Transport</option>
             <option value="Entertainment">Entertainment</option>
             <option value="Utilities">Utilities</option>
+            <option value="Health">Health</option>
+            <option value="Education">Education</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Bills">Bills</option>
+            <option value="Rent">Rent</option>
             <option value="Other">Other</option>
           </select>
           <input 
@@ -170,13 +181,6 @@ const ExpenseList = () => {
           <h3>Update Expense</h3>
           <form onSubmit={handleUpdate}>
             <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description"
-              required
-            />
-            <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -193,8 +197,25 @@ const ExpenseList = () => {
               <option value="Transport">Transport</option>
               <option value="Entertainment">Entertainment</option>
               <option value="Utilities">Utilities</option>
+              <option value="Health">Health</option>
+              <option value="Education">Education</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Bills">Bills</option>
+              <option value="Rent">Rent</option>
               <option value="Other">Other</option>
             </select>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description (optional)"
+            />
             <button type="submit">Update Expense</button>
             <button type="button" onClick={resetForm}>Cancel</button>
           </form>

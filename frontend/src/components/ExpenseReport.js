@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { jsPDF } from 'jspdf'; // Import jsPDF library
-import 'jspdf-autotable'; // Import autoTable plugin
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import ExcelJS from 'exceljs';
 
 const ExpenseReport = () => {
     const [expenses, setExpenses] = useState([]);
@@ -21,53 +22,25 @@ const ExpenseReport = () => {
         fetchExpenses();
     }, []);
 
-    // Function to download the Excel report
-    const handleDownloadReport = async () => {
-        const token = localStorage.getItem('token');
-        try {
-            const response = await axios.get('http://localhost:5000/api/expenses/report', {
-                responseType: 'blob',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'expense_report.xlsx');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error downloading report', error);
-            alert('Failed to download report. Please try again.');
-        }
-    };
-
-    // Function to generate PDF using jsPDF
     const generatePDF = () => {
         const doc = new jsPDF();
         doc.setFontSize(18);
         doc.text("Expense Report", 14, 15);
         doc.setFontSize(12);
 
-        // Table configuration for expenses
-        const tableColumn = ["Description", "Amount ($)", "Category", "Date"];
+        const tableColumn = ["Description", "Amount (₹)", "Category", "Date"];
         const tableRows = [];
 
-        // Populate table rows with expense data
         expenses.forEach(expense => {
             const expenseData = [
                 expense.description,
-                expense.amount.toFixed(2),
+                `₹${expense.amount.toFixed(2)}`,
                 expense.category,
                 new Date(expense.createdAt).toLocaleDateString(),
             ];
             tableRows.push(expenseData);
         });
 
-        // Use autoTable plugin to generate the table
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
@@ -76,21 +49,76 @@ const ExpenseReport = () => {
             styles: { fontSize: 10 },
         });
 
-        doc.save("expense_report.pdf");
+        return doc.output('datauristring'); // Get PDF data as a data URI
+    };
+
+    const handleDownloadPDF = () => {
+        const pdfData = generatePDF();
+        const link = document.createElement('a');
+        link.href = pdfData;
+        link.setAttribute('download', 'expense_report.pdf');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleDownloadExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Expenses');
+
+        // Add column headers
+        worksheet.columns = [
+            { header: 'Description', key: 'description' },
+            { header: 'Amount', key: 'amount' },
+            { header: 'Category', key: 'category' },
+            { header: 'Date', key: 'date' }
+        ];
+
+        // Add rows to the worksheet
+        expenses.forEach(expense => {
+            worksheet.addRow({
+                description: expense.description,
+                amount: expense.amount,
+                category: expense.category,
+                date: new Date(expense.createdAt).toLocaleDateString(),
+            });
+        });
+
+        // Generate Excel file
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/octet-stream' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'expense_report.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleExportToMail = async () => {
+        const token = localStorage.getItem('token');
+        const pdfData = await generatePDF(); // Generate PDF data
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/expenses/export-to-mail', 
+                { pdfData: pdfData.split(',')[1] }, // Send only the base64 part
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+            alert(response.data.message);
+        } catch (error) {
+            console.error('Error exporting report to email:', error);
+            alert('Failed to send report to email. Please try again.');
+        }
     };
 
     return (
         <div>
             <h2>Expense Report</h2>
-            {expenses.length === 0 ? (
-                <p>No expenses to report.</p>
-            ) : (
-                <>
-                    <h3>Total Expenses: ₹{expenses.reduce((total, expense) => total + expense.amount, 0).toFixed(2)}</h3>
-                    <button onClick={handleDownloadReport}>Download Excel Report</button>
-                    <button onClick={generatePDF}>Generate PDF Report</button>
-                </>
-            )}
+            <button onClick={handleDownloadPDF}>Download PDF Report</button>
+            <button onClick={handleDownloadExcel}>Download Excel Report</button>
+            <button onClick={handleExportToMail}>Send Report to Email</button>
         </div>
     );
 };

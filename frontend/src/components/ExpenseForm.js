@@ -11,7 +11,18 @@ const ExpenseForm = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const fetchedCategories = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Other'];
+      const fetchedCategories = [
+        'Food',
+        'Transport',
+        'Entertainment',
+        'Utilities',
+        'Health',
+        'Education',
+        'Shopping',
+        'Bills',
+        'Rent',
+        'Other'
+      ];
       setCategories(fetchedCategories);
     };
     fetchCategories();
