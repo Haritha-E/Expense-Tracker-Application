@@ -48,43 +48,6 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 
-// Endpoint to generate Excel report
-app.get('/api/expenses/report', isAuthenticated, async (req, res) => {
-  try {
-    const expenses = await Expense.find({ userId: req.user.id }); // Fetch expenses for the logged-in user
-
-    // Create a new workbook and worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Expenses');
-
-    // Add column headers
-    worksheet.columns = [
-      { header: 'Description', key: 'description' },
-      { header: 'Amount', key: 'amount' },
-      { header: 'Category', key: 'category' },
-      { header: 'Date', key: 'date' }
-    ];
-
-    // Add rows to the worksheet
-    expenses.forEach(expense => {
-      worksheet.addRow({
-        description: expense.description,
-        amount: expense.amount,
-        category: expense.category,
-        date: new Date(expense.createdAt).toLocaleDateString(),
-      });
-    });
-
-    // Generate Excel file
-    const buffer = await workbook.xlsx.writeBuffer();
-    res.setHeader('Content-Disposition', 'attachment; filename=expense_report.xlsx');
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.send(buffer);
-  } catch (error) {
-    console.error('Error generating report:', error);
-    res.status(500).json({ message: 'Error generating report' });
-  }
-});
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
