@@ -22,21 +22,26 @@ const isAuthenticated = (req, res, next) => {
 
 // Create a new expense
 router.post('/', isAuthenticated, async (req, res) => {
-  const { amount, category, createdAt, description } = req.body;
+  const { transactionType, amount, category, createdAt, description } = req.body;
   const userId = req.user.id;
 
+  // Ensure transactionType is provided and valid
+  if (!transactionType || !['Expense', 'Income'].includes(transactionType)) {
+    return res.status(400).json({ message: 'Transaction type must be "Expense" or "Income".' });
+  }
   if (!createdAt) {
-    return res.status(400).json({ message: 'Date is required for an expense.' });
+    return res.status(400).json({ message: 'Date is required for a transaction.' });
   }
 
   try {
-    const newExpense = new Expense({ userId, amount, category, createdAt, description });
-    await newExpense.save();
-    res.status(201).json(newExpense);
+    const newTransaction = new Expense({ userId, transactionType, amount, category, createdAt, description });
+    await newTransaction.save();
+    res.status(201).json(newTransaction);
   } catch (err) {
-    res.status(500).json({ message: 'Error creating expense', error: err.message });
+    res.status(500).json({ message: 'Error creating transaction', error: err.message });
   }
 });
+
 
 // Get all expenses for a user
 router.get('/', isAuthenticated, async (req, res) => {
@@ -50,23 +55,28 @@ router.get('/', isAuthenticated, async (req, res) => {
 
 // Update an expense by ID
 router.put('/:id', isAuthenticated, async (req, res) => {
-  const { amount, category, createdAt, description } = req.body;
+  const { transactionType, amount, category, createdAt, description } = req.body;
 
+  // Ensure transactionType is provided and valid if included in update
+  if (transactionType && !['Expense', 'Income'].includes(transactionType)) {
+    return res.status(400).json({ message: 'Transaction type must be "Expense" or "Income".' });
+  }
   if (!createdAt) {
-    return res.status(400).json({ message: 'Date is required for updating an expense.' });
+    return res.status(400).json({ message: 'Date is required for updating a transaction.' });
   }
 
   try {
-    const updatedExpense = await Expense.findByIdAndUpdate(
+    const updatedTransaction = await Expense.findByIdAndUpdate(
       req.params.id,
-      { amount, category, createdAt, description },
+      { transactionType, amount, category, createdAt, description },
       { new: true }
     );
-    res.status(200).json(updatedExpense);
+    res.status(200).json(updatedTransaction);
   } catch (err) {
-    res.status(500).json({ message: 'Error updating expense', error: err.message });
+    res.status(500).json({ message: 'Error updating transaction', error: err.message });
   }
 });
+
 
 // Delete an expense by ID
 router.delete('/:id', isAuthenticated, async (req, res) => {

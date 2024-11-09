@@ -7,6 +7,11 @@ const expenseSchema = new Schema({
     ref: 'User',
     required: true,
   },
+  transactionType: {
+    type: String,
+    enum: ['Expense', 'Income'], // New field to differentiate between Expense and Income
+    required: true,
+  },
   amount: {
     type: Number,
     required: true,
@@ -17,7 +22,7 @@ const expenseSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    required: true, // Updated to make the date required and set by the user
+    required: true, // User-provided date for transaction
   },
   description: {
     type: String,

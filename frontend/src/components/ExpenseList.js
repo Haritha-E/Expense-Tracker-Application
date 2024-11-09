@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
+import { FaSortAmountDownAlt, FaSortAmountUp, FaArrowUp, FaArrowDown, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import './ExpenseList.css';
 
 const ExpenseList = () => {
@@ -11,11 +11,13 @@ const ExpenseList = () => {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
     const [date, setDate] = useState('');
+    const [transactionType, setTransactionType] = useState('');
     const [searchCategory, setSearchCategory] = useState('');
     const [searchDate, setSearchDate] = useState('');
-    const [sortBy, setSortBy] = useState('amount');
-    const [sortOrder, setSortOrder] = useState('asc');
-    const [editingIndex, setEditingIndex] = useState(null); // Track the index of the expense being edited
+    const [searchTransactionType, setSearchTransactionType] = useState('');
+    const [sortBy, setSortBy] = useState('date');
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [editingIndex, setEditingIndex] = useState(null);
 
     useEffect(() => {
         const fetchExpenses = async () => {
@@ -31,6 +33,63 @@ const ExpenseList = () => {
         };
         fetchExpenses();
     }, []);
+
+    const filteredExpenses = expenses.filter(expense => {
+        const matchesCategory = searchCategory ? expense.category === searchCategory : true;
+        const matchesDate = searchDate ? new Date(expense.createdAt).toISOString().slice(0, 10) === searchDate : true;
+        const matchesTransactionType = searchTransactionType ? expense.transactionType === searchTransactionType : true;
+        return matchesCategory && matchesDate && matchesTransactionType;
+    });
+
+    // Memoize totals calculation
+    const calculateTotals = useMemo(() => {
+        let totalExpense = 0;
+        let totalIncome = 0;
+    
+        filteredExpenses.forEach(expense => {
+            if (expense.transactionType === 'Income') {
+                totalIncome += expense.amount;
+            } else if (expense.transactionType === 'Expense') {
+                totalExpense += expense.amount;
+            }
+        });
+    
+        return {
+            totalExpense,
+            totalIncome,
+            totalTurnover: totalIncome + totalExpense,
+        };
+    }, [filteredExpenses]);  // Recalculate when filteredExpenses change
+    
+
+    const { totalExpense, totalIncome, totalTurnover } = calculateTotals;
+
+
+
+    const sortedExpenses = [...filteredExpenses].sort((a, b) => {
+        const aValue = sortBy === 'amount' ? a.amount : new Date(a.createdAt).getTime();
+        const bValue = sortBy === 'amount' ? b.amount : new Date(b.createdAt).getTime();
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    });
+
+    const handleClearFilters = () => {
+        setSearchCategory('');
+        setSearchDate('');
+        setSearchTransactionType('');
+        setSortBy('date');
+        setSortOrder('desc');
+    };
+
+    const resetForm = () => {
+        setCurrentExpense(null);
+        setDescription('');
+        setAmount('');
+        setCategory('');
+        setTransactionType('');
+        setDate('');
+        setIsEditing(false);
+        setEditingIndex(null);
+    };
 
     const handleDelete = async (id) => {
         const token = localStorage.getItem('token');
@@ -49,19 +108,26 @@ const ExpenseList = () => {
         setDescription(expense.description || '');
         setAmount(expense.amount);
         setCategory(expense.category);
+        setTransactionType(expense.transactionType);
         setDate(new Date(expense.createdAt).toISOString().slice(0, 10));
         setIsEditing(true);
-        setEditingIndex(index); // Set the index of the current expense being edited
+        setEditingIndex(index);
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
+        if (!amount || !category || !date || !transactionType) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
         const token = localStorage.getItem('token');
         try {
             const updatedExpense = {
-                description: description || undefined, // Keep description optional
+                description: description || undefined,
                 amount: Number(amount),
                 category,
+                transactionType,
                 createdAt: date,
             };
             await axios.put(`http://localhost:5000/api/expenses/${currentExpense._id}`, updatedExpense, {
@@ -76,47 +142,9 @@ const ExpenseList = () => {
         }
     };
 
-    const resetForm = () => {
-        setCurrentExpense(null);
-        setDescription('');
-        setAmount('');
-        setCategory('');
-        setDate('');
-        setIsEditing(false);
-        setEditingIndex(null); // Reset the editing index
-    };
-
-    const calculateTotalExpenses = () => {
-        const filteredExpenses = expenses.filter(expense => {
-            const matchesCategory = searchCategory ? expense.category === searchCategory : true;
-            const matchesDate = searchDate ? new Date(expense.createdAt).toISOString().slice(0, 10) === searchDate : true;
-            return matchesCategory && matchesDate;
-        });
-        return filteredExpenses.reduce((total, expense) => total + expense.amount, 0);
-    };
-
-    const filteredExpenses = expenses.filter(expense => {
-        const matchesCategory = searchCategory ? expense.category === searchCategory : true;
-        const matchesDate = searchDate ? new Date(expense.createdAt).toISOString().slice(0, 10) === searchDate : true;
-        return matchesCategory && matchesDate;
-    });
-
-    const sortedExpenses = [...filteredExpenses].sort((a, b) => {
-        const aValue = sortBy === 'amount' ? a.amount : new Date(a.createdAt).getTime();
-        const bValue = sortBy === 'amount' ? b.amount : new Date(b.createdAt).getTime();
-        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
-    });
-
-    const handleClearFilters = () => {
-        setSearchCategory('');
-        setSearchDate('');
-        setSortBy('amount');
-        setSortOrder('asc');
-    };
-
     return (
         <div>
-            <h2>Your Expenses</h2>
+            <h2>Your Transactions</h2>
             <div className="search-bar">
                 <div className="filter-container">
                     <select onChange={(e) => setSearchCategory(e.target.value)} value={searchCategory}>
@@ -130,7 +158,13 @@ const ExpenseList = () => {
                         <option value="Shopping">Shopping</option>
                         <option value="Bills">Bills</option>
                         <option value="Rent">Rent</option>
+                        <option value="Salary">Salary</option>
                         <option value="Other">Other</option>
+                    </select>
+                    <select onChange={(e) => setSearchTransactionType(e.target.value)} value={searchTransactionType}>
+                        <option value="">All Transaction Types</option>
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
                     </select>
                     <input
                         type="date"
@@ -150,76 +184,105 @@ const ExpenseList = () => {
                 </div>
             </div>
 
-            <h3>Total Expenses: ₹{calculateTotalExpenses().toFixed(2)}</h3> {/* Total displayed here */}
+            <div className="totals">
+                <h3>Total Expense: ₹{totalExpense.toFixed(2)}</h3>
+                <h3>Total Income: ₹{totalIncome.toFixed(2)}</h3>
+                <h3>Total Turnover: ₹{totalTurnover.toFixed(2)}</h3>
+            </div>
 
             {sortedExpenses.length === 0 ? (
-                <p>No expenses found for the selected filters.</p>
+                <p>No transactions found for the selected filters.</p>
             ) : (
-                <>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Amount</th>
-                                <th>Category</th>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedExpenses.map((expense, index) => (
-                                <React.Fragment key={expense._id}>
-                                    <tr>
-                                        <td>₹{expense.amount}</td>
-                                        <td>{expense.category}</td>
-                                        <td>{new Date(expense.createdAt).toLocaleDateString()}</td>
-                                        <td>{expense.description}</td>
-                                        <td>
-                                            <button onClick={() => handleEdit(expense, index)}>Update</button>
-                                            <button onClick={() => handleDelete(expense._id)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                    {isEditing && editingIndex === index && ( // Show form below the selected row
-                                        <tr>
-                                            <td colSpan="5">
-                                                <form onSubmit={handleUpdate}>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Amount"
-                                                        value={amount}
-                                                        onChange={(e) => setAmount(e.target.value)}
-                                                        required
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Category"
-                                                        value={category}
-                                                        onChange={(e) => setCategory(e.target.value)}
-                                                        required
-                                                    />
-                                                    <input
-                                                        type="date"
-                                                        value={date}
-                                                        onChange={(e) => setDate(e.target.value)}
-                                                        required
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Description (optional)"
-                                                        value={description}
-                                                        onChange={(e) => setDescription(e.target.value)}
-                                                    />
-                                                    <button type="submit">Update Expense</button>
-                                                    <button type="button" onClick={resetForm}>Cancel</button>
-                                                </form>
-                                            </td>
-                                        </tr>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Transaction Type</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedExpenses.map((expense) => (
+                            <tr key={expense._id}>
+                                <td style={{ color: expense.transactionType === 'Income' ? 'green' : 'red' }}>
+                                    {expense.transactionType === 'Income' ? (
+                                        <><FaArrowUp /> ₹{expense.amount}</>
+                                    ) : (
+                                        <><FaArrowDown /> ₹{expense.amount}</>
                                     )}
-                                </React.Fragment>
-                            ))}
-                        </tbody>
-                    </table>
-                </>
+                                </td>
+                                <td>{expense.category}</td>
+                                <td>{expense.transactionType}</td>
+                                <td>{new Date(expense.createdAt).toLocaleDateString()}</td>
+                                <td>{expense.description}</td>
+                                <td>
+                                    <FaEdit onClick={() => handleEdit(expense)} style={{ cursor: 'pointer', color: 'blue' }} />
+                                    <FaTrashAlt onClick={() => handleDelete(expense._id)} style={{ cursor: 'pointer', color: 'red', marginLeft: '10px' }} />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+
+            {/* Modal for Edit Expense */}
+            {isEditing && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <h3>Edit Expense</h3>
+                        <form onSubmit={handleUpdate}>
+                            <label>Transaction Type</label>
+                            <select value={transactionType} onChange={(e) => setTransactionType(e.target.value)}>
+                                <option value="Expense">Expense</option>
+                                <option value="Income">Income</option>
+                            </select>
+
+                            <label>Amount</label>
+                            <input
+                                type="number"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                placeholder="Amount"
+                            />
+
+                            <label>Category</label>
+                            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                            <option value="Food">Food</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Health">Health</option>
+                            <option value="Education">Education</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Bills">Bills</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Other">Other</option>
+                            </select>
+
+                            <label>Date</label>
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                            />
+
+                            <label>Description (Optional)</label>
+                            <input
+                                type="text"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Description"
+                            />
+
+                            <button type="submit">Update</button>
+                            <button type="button" onClick={resetForm}>Cancel</button>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );

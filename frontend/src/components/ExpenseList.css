@@ -1,122 +1,233 @@
-.expense-list-container {
-    padding: 40px;
-    max-width: 900px;
-    margin: auto;
-    background: linear-gradient(135deg, #e0f7fa, #80deea); /* Cool blue gradient */
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    text-align: center;
-    color: #004d40;
-    margin-bottom: 20px;
-    font-size: 28px;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #f9f9f9; /* Light grey table background */
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  
-  table th, table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ccc;
-  }
-  
-  table th {
-    background-color: #00838f; /* Bold teal header */
-    color: white;
-  }
-  
-  table tbody tr:nth-child(even) {
-    background-color: #e0f2f1; /* Soft teal row background */
-  }
-  
-  table tbody tr:hover {
-    background-color: #b2ebf2; /* Slightly brighter hover effect */
-  }
-  
+/* General Styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f7fc;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  text-align: center;
+  margin: 20px 0;
+  color: #333;
+}
+
+h3 {
+  color: #333;
+}
+
+/* Search and Filter */
+.search-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.filter-container {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-container select,
+.filter-container input,
+.filter-container button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.filter-container button {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.filter-container button:hover {
+  background-color: #0056b3;
+}
+
+/* Sorting */
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-container select {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.sort-container button {
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Totals */
+.totals {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.totals h3 {
+  margin: 0;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+table th,
+table td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+table td {
+  color: #333;
+}
+
+table td:first-child {
+  text-align: left;
+}
+
+table td:nth-child(1) {
+  color: #333;
+  font-weight: bold;
+}
+
+table td:nth-child(1).Income {
+  color: green;
+}
+
+table td:nth-child(1).Expense {
+  color: red;
+}
+
+/* Icons */
+table td .FaEdit,
+table td .FaTrashAlt {
+  cursor: pointer;
+  margin: 5px;
+}
+
+table td .FaEdit {
+  color: blue;
+}
+
+table td .FaTrashAlt {
+  color: red;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content label {
+  margin: 10px 0 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.modal-content input,
+.modal-content select {
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.modal-content button {
+  padding: 8px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.modal-content button:hover {
+  background-color: #0056b3;
+}
+
+.modal-content button[type="button"] {
+  background-color: #f44336;
+}
+
+.modal-content button[type="button"]:hover {
+  background-color: #d32f2f;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
   .search-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .filter-container {
-    display: flex;
-    align-items: center;
-  }
-  
-  .filter-container select,
-  .filter-container input,
-  .filter-container button {
-    margin-right: 10px;
-  }
-  
-  .sort-container {
-    display: flex;
-    align-items: center;
-  }
-  
-  .sort-container select,
-  .sort-container button {
-    margin-left: 10px;
+      flex-direction: column;
+      gap: 10px;
   }
 
-  
-  .update-form {
-    padding: 20px;
-    background-color: #e0f7fa; /* Light blue background for the form */
-    margin-top: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  .filter-container,
+  .sort-container {
+      flex-direction: column;
+      align-items: flex-start;
   }
-  
-  .update-form h3 {
-    color: #004d40;
-    text-align: center;
+
+  table td,
+  table th {
+      font-size: 14px;
   }
-  
-  .update-form input, .update-form select {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    background-color: #f1f1f1; /* Light grey background inside inputs */
-  }
-  
-  .update-form button {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(90deg, #00796b, #004d40); /* Bold greenish-teal for update button */
-    border: none;
-    color: white;
-    border-radius: 5px;
-    font-size: 16px;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .update-form button:hover {
-    background: linear-gradient(90deg, #004d40, #00251a);
-  }
-  
-  .update-form button.cancel {
-    background: #757575; /* Neutral grey for cancel button */
-    margin-top: 0;
-  }
-  
-  .update-form button.cancel:hover {
-    background: #616161;
-  }
-  
+}
