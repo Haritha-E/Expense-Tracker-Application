@@ -34,7 +34,7 @@ const ExpenseForm = () => {
     };
 
     try {
-      await axios.post('http://localhost:5000/api/expenses', expense, {
+      await axios.post('https://expense-tracker-backend-q8tp.onrender.com/api/expenses', expense, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setTransactionType('Expense');

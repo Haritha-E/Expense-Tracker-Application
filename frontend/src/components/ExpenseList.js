@@ -23,7 +23,7 @@ const ExpenseList = () => {
         const fetchExpenses = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://localhost:5000/api/expenses', {
+                const response = await axios.get('https://expense-tracker-backend-q8tp.onrender.com/api/expenses', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setExpenses(response.data);
@@ -94,7 +94,7 @@ const ExpenseList = () => {
     const handleDelete = async (id) => {
         const token = localStorage.getItem('token');
         try {
-            await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
+            await axios.delete(`https://expense-tracker-backend-q8tp.onrender.com/api/expenses/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setExpenses(expenses.filter(expense => expense._id !== id));
@@ -130,7 +130,7 @@ const ExpenseList = () => {
                 transactionType,
                 createdAt: date,
             };
-            await axios.put(`http://localhost:5000/api/expenses/${currentExpense._id}`, updatedExpense, {
+            await axios.put(`https://expense-tracker-backend-q8tp.onrender.com/api/expenses/${currentExpense._id}`, updatedExpense, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setExpenses(expenses.map(expense =>

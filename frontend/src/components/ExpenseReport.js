@@ -57,7 +57,7 @@ const ExpenseReport = () => {
         const fetchExpenses = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://localhost:5000/api/expenses', {
+                const response = await axios.get('https://expense-tracker-backend-q8tp.onrender.com/api/expenses', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setExpenses(response.data);
@@ -300,7 +300,7 @@ const ExpenseReport = () => {
 
         try {
             const response = await axios.post(
-                'http://localhost:5000/api/expenses/export-to-mail',
+                'https://expense-tracker-backend-q8tp.onrender.com/api/expenses/export-to-mail',
                 { pdfData: pdfBase64 },
                 {
                     headers: { Authorization: `Bearer ${token}` },
