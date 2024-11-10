@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './Login.css';
 import { loginUser } from '../api';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -14,18 +16,37 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await loginUser({ email, password });
-      localStorage.setItem('token', response.data.token); // Save token in localStorage
-      localStorage.setItem('userId', response.data.userId); // Save userId in localStorage
-      onLogin();
-      alert('Login successful!');
-    } catch (error) {
-      setError('Login failed. Please check your credentials.');
-      console.error('Login error:', error);
-    } finally {
-      setLoading(false);
-    }
+        const response = await loginUser({ email, password });
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userId', response.data.userId);
+        
+        toast.success(
+              <div style={{ width: '400px'}}>
+                  Login successful!
+              </div>,
+              {
+                  position: 'top-right',
+                  autoClose: 2000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+              }
+          );
+
+        setTimeout(() => {
+          onLogin(); // Redirect or call the onLogin function
+        }, 3000);
+
+      } catch (error) {
+          setError('Login failed. Please check your credentials.');
+          console.error('Login error:', error);
+      } finally {
+          setLoading(false);
+      }
   };
+
 
   return (
     <div className="login-container">

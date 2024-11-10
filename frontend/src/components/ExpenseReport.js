@@ -8,6 +8,8 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import MonthlyExpensesChart from './MonthlyExpensesChart';
 import YearlyExpensesChart from './YearlyExpensesChart';
+import Swal from 'sweetalert2';
+const API_URL = process.env.REACT_APP_API_URL;
 
 
 // Register the components you need
@@ -57,7 +59,7 @@ const ExpenseReport = () => {
         const fetchExpenses = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('https://expense-tracker-backend-q8tp.onrender.com/api/expenses', {
+                const response = await axios.get(`${API_URL}/expenses`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setExpenses(response.data);
@@ -90,17 +92,45 @@ const ExpenseReport = () => {
         const totalExpense = expenses
             .filter(expense => expense.transactionType === 'Expense')
             .reduce((acc, expense) => acc + expense.amount, 0);
-        const totalTurnover = totalIncome - totalExpense;
+        const totalBalance = totalIncome - totalExpense;
     
-        // Display Totals in a Styled Box
+        // Setting up background color and section for totals
         doc.setFillColor(41, 128, 185);
         doc.setTextColor(255, 255, 255);
-        doc.rect(14, 40, doc.internal.pageSize.getWidth() - 28, 25, 'F'); // Background box for totals
+        doc.rect(14, 40, doc.internal.pageSize.getWidth() - 28, 25, 'F');
+
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
+
+        // Display Total Income and Total Expense
         doc.text(`Total Income: Rs. ${totalIncome.toFixed(2)}`, 20, 47);
         doc.text(`Total Expense: Rs. ${totalExpense.toFixed(2)}`, 20, 54);
-        doc.text(`Total Turnover: Rs. ${totalTurnover.toFixed(2)}`, 20, 61);
+
+        // Arrow placement based on balance
+        const balanceText = `Total Balance: Rs. ${Math.abs(totalBalance).toFixed(2)}`;
+        const textX = 20; // X position for balance text
+        const arrowX = textX + doc.getTextWidth(balanceText) + 3; // Position arrow closer to amount
+
+        if (totalBalance >= 0) {
+            doc.setTextColor(0, 255, 0); // Green for positive balance
+            doc.text(balanceText, textX, 61); // Draw text
+
+            // Draw upward arrow, slightly adjusting Y position to align with text
+            doc.setDrawColor(0, 255, 0);
+            doc.line(arrowX, 57.5, arrowX, 61.5); // Vertical line
+            doc.line(arrowX - 1, 59.0, arrowX, 57.5); // Left diagonal
+            doc.line(arrowX + 1, 59.0, arrowX, 57.5); // Right diagonal
+        } else {
+            doc.setTextColor(255, 127, 127);  // Red for negative balance
+            doc.text(balanceText, textX, 61); // Draw text
+
+            // Draw downward arrow, slightly adjusting Y position to align with text
+            doc.setDrawColor(255, 127, 127);
+            doc.line(arrowX, 57.5, arrowX, 61.5); // Vertical line
+            doc.line(arrowX - 1, 59.5, arrowX, 61.5); // Left diagonal
+            doc.line(arrowX + 1, 59.5, arrowX, 61.5); // Right diagonal
+        }
+
         
         // Section Header for Detailed Expenses
         doc.setFontSize(12);
@@ -125,41 +155,85 @@ const ExpenseReport = () => {
     
         // Loop through each month-year group and create a table for each
         Object.keys(groupedExpenses).forEach((monthYear) => {
-            // Add month-year heading
+            const monthExpenses = groupedExpenses[monthYear];
+            
+            // Calculate total income and total expense for the month
+            const totalIncomeMonth = monthExpenses
+                .filter(expense => expense.transactionType === 'Income')
+                .reduce((acc, expense) => acc + expense.amount, 0);
+            const totalExpenseMonth = monthExpenses
+                .filter(expense => expense.transactionType === 'Expense')
+                .reduce((acc, expense) => acc + expense.amount, 0);
+            const totalBalanceMonth = totalIncomeMonth - totalExpenseMonth;
+        
+            // Define text parts and calculate positions
+            const monthYearText = `${monthYear}`;
+            const balanceLabelText = `Balance: `;
+            let balanceAmountText;
+            if (totalBalanceMonth > 0) {
+                balanceAmountText = `(+) Rs. ${Math.abs(totalBalanceMonth).toFixed(2)}`;
+            } else {
+                balanceAmountText = `(-) Rs. ${Math.abs(totalBalanceMonth).toFixed(2)}`;
+            }
+
+        
+            // Render month-year text
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
-            doc.text(monthYear, 14, startY);
+            doc.setTextColor(0, 0, 0); // Black for month-year
+            doc.text(monthYearText, 14, startY);
+        
+            // Render balance label right after month-year
+            const balanceLabelX = 14 + doc.getTextWidth(monthYearText) + 5;
+            doc.text(balanceLabelText, balanceLabelX, startY);
+        
+            // Render balance amount with conditional color
+            const amountX = balanceLabelX + doc.getTextWidth(balanceLabelText);
+            if (totalBalanceMonth >= 0) {
+                doc.setTextColor(0, 128, 0); // Green for positive balance
+            } else {
+                doc.setTextColor(255, 0, 0); // Red for negative balance
+            }
+            doc.text(balanceAmountText, amountX, startY);
+        
+            // Move to the next line
             startY += 10;
-            
-            // Table headers and row data for each group
-            const tableColumn = ["Amount (Rs.)", "Category", "Date", "Description"];
-            const tableRows = groupedExpenses[monthYear].map(expense => {
-                const amountDisplay = expense.transactionType === 'Income'
-                    ? `↑ Rs. ${expense.amount.toFixed(2)}`
-                    : `↓ Rs. ${expense.amount.toFixed(2)}`;
-                const amountStyle = expense.transactionType === 'Income' ? [0, 128, 0] : [255, 0, 0];
-                
-                return [
-                    { content: amountDisplay, styles: { textColor: amountStyle } },
-                    expense.category,
-                    new Date(expense.createdAt).toLocaleDateString(),
-                    expense.description || '',
-                ];
-            });
-            
-            doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: startY,
-                theme: 'grid',
-                margin: { left: 14, right: 14 },
-                styles: { fontSize: 10, cellPadding: 4 },
-                headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontStyle: 'bold' },
-                bodyStyles: { lineColor: [204, 204, 204], lineWidth: 0.2 },
-            });
+        
+            // Reset text color for further content
+            doc.setTextColor(0, 0, 0);               
+        
+    // Table headers and row data for each group
+    const tableColumn = ["Amount (Rs.)", "Category", "Date", "Description"];
+    const tableRows = monthExpenses.map(expense => {
+        const amountDisplay = expense.transactionType === 'Income'
+            ? `(+) Rs. ${expense.amount.toFixed(2)}`
+            : `(-) Rs. ${expense.amount.toFixed(2)}`;
+        const amountStyle = expense.transactionType === 'Income' ? [0, 128, 0] : [255, 0, 0];
+        
+        return [
+            { content: amountDisplay, styles: { textColor: amountStyle } },
+            expense.category,
+            new Date(expense.createdAt).toLocaleDateString(),
+            expense.description || '',
+        ];
+    });
     
-            startY = doc.autoTable.previous.finalY + 15;
-        });
+    // Create table with expenses for the month
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: startY,
+        theme: 'grid',
+        margin: { left: 14, right: 14 },
+        styles: { fontSize: 10, cellPadding: 4 },
+        headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontStyle: 'bold' },
+        bodyStyles: { lineColor: [204, 204, 204], lineWidth: 0.2 },
+    });
+
+    // Update the startY for the next month section
+    startY = doc.autoTable.previous.finalY + 15;
+});
+
     
         return doc.output('blob');
     };
@@ -207,7 +281,7 @@ const ExpenseReport = () => {
     const totalExpense = sortedExpenses
         .filter(expense => expense.transactionType === 'Expense')
         .reduce((acc, expense) => acc + expense.amount, 0);
-    const totalTurnover = totalIncome - totalExpense;
+    const totalBalance = totalIncome - totalExpense;
 
     // Add Total Income, Total Expense, and Total Turnover to the top of the table
     worksheet.mergeCells('A4:D4');
@@ -222,11 +296,18 @@ const ExpenseReport = () => {
     expenseCell.font = { size: 12, bold: true };
     expenseCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
+    // Total Balance Logic (with arrows)
+    const arrow = totalBalance > 0 ? '↑' : '↓'; // Green for positive, Red for negative
+    const arrowColor = totalBalance > 0 ? 'FF008000' : 'FFFF0000'; // Green for positive, Red for negative
+
     worksheet.mergeCells('A6:D6');
     const turnoverCell = worksheet.getCell('A6');
-    turnoverCell.value = `Total Turnover: ₹${totalTurnover.toFixed(2)}`;
+    turnoverCell.value = `Total Balance: ₹${Math.abs(totalBalance).toFixed(2)} ${arrow}`;
     turnoverCell.font = { size: 12, bold: true };
     turnoverCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Apply color to the arrow
+    turnoverCell.font.color = { argb: arrowColor };
 
     // Table Headers with some space below the totals
     worksheet.addRow([]); // Blank row for spacing
@@ -234,43 +315,62 @@ const ExpenseReport = () => {
     worksheet.getRow(8).font = { size: 12, bold: true };  // Make header bold
 
     // Group expenses by month and year
-    const groupedExpenses = {};
-    sortedExpenses.forEach(expense => {
-        const date = new Date(expense.createdAt);
-        const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
-        if (!groupedExpenses[monthYear]) {
-            groupedExpenses[monthYear] = [];
-        }
-        groupedExpenses[monthYear].push(expense);
-    });
-
-    // Add grouped expenses to the worksheet
-    for (const [monthYear, expenses] of Object.entries(groupedExpenses)) {
-        worksheet.addRow([]);
-        worksheet.mergeCells(`A${worksheet.lastRow.number}:D${worksheet.lastRow.number}`);
-        const monthYearCell = worksheet.getCell(`A${worksheet.lastRow.number}`);
-        monthYearCell.value = monthYear;
-        monthYearCell.font = { size: 12, bold: true, color: { argb: 'FF0000' } };
-        monthYearCell.alignment = { vertical: 'middle', horizontal: 'center' };
-
-        expenses.forEach(expense => {
-            const amountDisplay = expense.transactionType === 'Income'
-                ? `↑ ₹${expense.amount.toFixed(2)}`
-                : `↓ ₹${expense.amount.toFixed(2)}`;
-
-            const amountStyle = expense.transactionType === 'Income' ? 'FF008000' : 'FFFF0000'; // Green for income, Red for expense
-
-            const row = worksheet.addRow([
-                amountDisplay,
-                expense.category,
-                new Date(expense.createdAt).toLocaleDateString(),
-                expense.description || 'N/A',
-            ]);
-
-            // Apply color to Amount cell
-            row.getCell(1).font = { color: { argb: amountStyle }, bold: true };
-        });
+const groupedExpenses = {};
+sortedExpenses.forEach(expense => {
+    const date = new Date(expense.createdAt);
+    const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+    if (!groupedExpenses[monthYear]) {
+        groupedExpenses[monthYear] = { expenses: [], totalIncome: 0, totalExpense: 0 };
     }
+    groupedExpenses[monthYear].expenses.push(expense);
+    if (expense.transactionType === 'Income') {
+        groupedExpenses[monthYear].totalIncome += expense.amount;
+    } else {
+        groupedExpenses[monthYear].totalExpense += expense.amount;
+    }
+});
+
+// Add grouped expenses to the worksheet
+for (const [monthYear, data] of Object.entries(groupedExpenses)) {
+    const totalBalanceMonth = data.totalIncome - data.totalExpense;  // Calculate balance for the month
+    const arrow = totalBalanceMonth >= 0 ? '↑' : '↓'; // Arrow for positive/negative balance
+    const arrowColor = totalBalanceMonth >= 0 ? 'FF008000' : 'FFFF0000'; // Green for income, Red for expense
+    
+    worksheet.addRow([]);  // Add a blank row for spacing
+    worksheet.mergeCells(`A${worksheet.lastRow.number}:D${worksheet.lastRow.number}`);
+    
+    const monthYearCell = worksheet.getCell(`A${worksheet.lastRow.number}`);
+    monthYearCell.value = `${monthYear} - Balance: ₹${Math.abs(totalBalanceMonth).toFixed(2)} ${arrow}`;
+    monthYearCell.font = { size: 12, bold: true, color: { argb: 'FF000000' } }; // Label color black
+    monthYearCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Apply color for the balance amount and arrow
+    monthYearCell.font = {
+        ...monthYearCell.font,
+        color: { argb: arrowColor },
+    };
+    monthYearCell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' },
+        bottom: { style: 'thin' }, // Box the whole month row
+    };
+
+    // Add each expense of the month
+    data.expenses.forEach(expense => {
+        const amountDisplay = expense.transactionType === 'Income'
+            ? `↑ ₹${expense.amount.toFixed(2)}`
+            : `↓ ₹${expense.amount.toFixed(2)}`;
+
+        const amountStyle = expense.transactionType === 'Income' ? 'FF008000' : 'FFFF0000'; // Green for income, Red for expense
+
+        const row = worksheet.addRow([amountDisplay, expense.category, new Date(expense.createdAt).toLocaleDateString(), expense.description || 'N/A']);
+        
+        // Apply color to Amount cell
+        row.getCell(1).font = { color: { argb: amountStyle }, bold: true };
+    });
+}
+
 
     // Auto-resize columns for better readability
     worksheet.columns.forEach(column => {
@@ -293,25 +393,52 @@ const ExpenseReport = () => {
 };
 
 
-    const handleExportToMail = async () => {
-        const token = localStorage.getItem('token');
-        const pdfBlob = generatePDF(); // Generate PDF as a Blob
-        const pdfBase64 = await convertBlobToBase64(pdfBlob); // Convert Blob to Base64
+const handleExportToMail = async () => {
+    const token = localStorage.getItem('token');
+    const pdfBlob = generatePDF(); // Generate PDF as a Blob
+    const pdfBase64 = await convertBlobToBase64(pdfBlob); // Convert Blob to Base64
 
-        try {
-            const response = await axios.post(
-                'https://expense-tracker-backend-q8tp.onrender.com/api/expenses/export-to-mail',
-                { pdfData: pdfBase64 },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-            alert(response.data.message);
-        } catch (error) {
-            console.error('Error exporting report to email:', error);
-            alert('Failed to send report to email. Please try again.');
+    // Show loading message
+    Swal.fire({
+        title: '<h2 style="color: #4A90E2;">Sending...</h2>',
+        html: '<p style="font-size: 1.0em; color: #333;">Please wait while your report is being sent.</p>',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
-    };
+    });
+
+    try {
+        const response = await axios.post(
+            `${API_URL}/expenses/export-to-mail`,
+            { pdfData: pdfBase64 },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // Show success message
+        Swal.fire({
+            icon: 'success',
+            title: '<h2 style="color: #4CAF50;">Email Sent!</h2>',
+            html: `<p style="font-size: 1.0em; color: #333;">${response.data.message}</p>`,
+            timer: 3000,
+            showConfirmButton: false
+        });
+    } catch (error) {
+        console.error('Error exporting report to email:', error);
+
+        // Show error message
+        Swal.fire({
+            icon: 'error',
+            title: '<h2 style="color: #E74C3C;">Failed to Send Email</h2>',
+            html: '<p style="font-size: 1.0em; color: #333;">An error occurred while sending the report. Please try again.</p>',
+            showConfirmButton: true,
+            confirmButtonText: 'Close',
+            confirmButtonColor: '#d33'
+        });
+    }
+};
+
 
     const convertBlobToBase64 = (blob) => {
         return new Promise((resolve, reject) => {

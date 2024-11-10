@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import './Login.css'; // Reuse the same CSS
 import { registerUser } from '../api'; // Adjust this if necessary
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify'; // Import Toastify components
+import 'react-toastify/dist/ReactToastify.css'; // Import default styling
+
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -12,7 +15,7 @@ const Register = () => {
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate(); // Initialize navigate
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,23 +26,23 @@ const Register = () => {
         setConfirmPasswordError('');
 
         // Step 1: Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setEmailError('Please enter a valid email address.');
-            return; // Stop further processing
+            return;
         }
 
         // Step 2: Validate password strength
-        const passwordRegex = /^(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/; // At least one special character and minimum 8 characters
+        const passwordRegex = /^(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
         if (!passwordRegex.test(password)) {
             setPasswordError('Password must be at least 8 characters long and contain at least one special character.');
-            return; // Stop further processing
+            return;
         }
 
         // Step 3: Check if passwords match
         if (password !== confirmPassword) {
             setConfirmPasswordError('Passwords do not match!');
-            return; // Stop further processing
+            return;
         }
 
         // Step 4: Register the user if all validations pass
@@ -48,17 +51,36 @@ const Register = () => {
             const response = await registerUser({ email, password });
 
             if (response.status === 201) {
-                alert('Registration successful! Please log in.');
-                navigate('/'); // Navigate to the login page
+                // Show success toast notification
+                toast.success(
+                    <div style={{ width: '400px'}}>
+                        Registration successful!
+                        <br />
+                        Redirecting to login...
+                    </div>,
+                    {
+                        position: 'top-right',
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                    }
+                );
+                
+                
+                // Redirect to login page after a delay
+                setTimeout(() => navigate('/'), 3000);
             } else {
                 const data = await response.json();
                 if (data.message) {
-                    setEmailError(data.message); // Set the error message from the backend
+                    setEmailError(data.message);
                 }
             }
         } catch (error) {
             console.error('Registration error:', error);
-            setEmailError('Registration failed. Please try again.'); // General error message
+            setEmailError('Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -86,7 +108,7 @@ const Register = () => {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
-                            {emailError && <p className="error-message">{emailError}</p>} {/* Email error message */}
+                            {emailError && <p className="error-message">{emailError}</p>}
                         </div>
                         <div className="input-group">
                             <label htmlFor="register-password">Password</label>
@@ -98,7 +120,7 @@ const Register = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
-                            {passwordError && <p className="error-message">{passwordError}</p>} {/* Password error message */}
+                            {passwordError && <p className="error-message">{passwordError}</p>}
                         </div>
                         <div className="input-group">
                             <label htmlFor="confirm-password">Confirm Password</label>
@@ -110,7 +132,7 @@ const Register = () => {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                             />
-                            {confirmPasswordError && <p className="error-message">{confirmPasswordError}</p>} {/* Confirm password error message */}
+                            {confirmPasswordError && <p className="error-message">{confirmPasswordError}</p>}
                         </div>
                         <button type="submit" disabled={loading}>
                             {loading ? 'Registering...' : 'Register'}
@@ -121,6 +143,7 @@ const Register = () => {
                     </p>
                 </div>
             </div>
+            <ToastContainer /> {/* Toast container for displaying pop-up messages */}
         </div>
     );
 };

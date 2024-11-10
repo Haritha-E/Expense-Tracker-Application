@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ExpenseForm.css';
 
+const API_URL = process.env.REACT_APP_API_URL;
 const ExpenseForm = () => {
   const [transactionType, setTransactionType] = useState('Expense');
   const [amount, setAmount] = useState('');
@@ -34,7 +35,7 @@ const ExpenseForm = () => {
     };
 
     try {
-      await axios.post('https://expense-tracker-backend-q8tp.onrender.com/api/expenses', expense, {
+      await axios.post(`${API_URL}/expenses`, expense, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setTransactionType('Expense');

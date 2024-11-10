@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ExpenseForm from './components/ExpenseForm';
@@ -9,7 +10,7 @@ import Register from './components/Register';
 import './App.css'; // Import the styling
 
 const App = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(localStorage.getItem('token') ? true : false);
 
   const handleLogin = () => {
     setLoggedIn(true);
@@ -27,6 +28,7 @@ const App = () => {
 
   return (
     <Router>
+      <ToastContainer />  
       <Routes>
         <Route path="/" element={loggedIn ? <Navigate to="/home" /> : <Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register onRegister={handleRegister} />} />

@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const Expense = require('./models/Expense'); // Import the Expense model
 const nodemailer = require('nodemailer');
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +12,8 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
+// app.use(cors());
+
 app.use(cors({
   origin: 'https://expense-tracker-frontend-40km.onrender.com', // Replace with your actual frontend URL
 }));

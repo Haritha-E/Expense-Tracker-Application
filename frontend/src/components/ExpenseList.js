@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { FaSortAmountDownAlt, FaSortAmountUp, FaArrowUp, FaArrowDown, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import './ExpenseList.css';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const ExpenseList = () => {
     const [expenses, setExpenses] = useState([]);
@@ -17,13 +18,16 @@ const ExpenseList = () => {
     const [searchTransactionType, setSearchTransactionType] = useState('');
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
+    // eslint-disable-next-line no-unused-vars
     const [editingIndex, setEditingIndex] = useState(null);
+    const [searchYear, setSearchYear] = useState('');
+    const [searchMonth, setSearchMonth] = useState('');
 
     useEffect(() => {
         const fetchExpenses = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('https://expense-tracker-backend-q8tp.onrender.com/api/expenses', {
+                const response = await axios.get(`${API_URL}/expenses`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setExpenses(response.data);
@@ -35,10 +39,14 @@ const ExpenseList = () => {
     }, []);
 
     const filteredExpenses = expenses.filter(expense => {
+        const expenseDate = new Date(expense.createdAt);
         const matchesCategory = searchCategory ? expense.category === searchCategory : true;
-        const matchesDate = searchDate ? new Date(expense.createdAt).toISOString().slice(0, 10) === searchDate : true;
+        const matchesDate = searchDate ? expenseDate.toISOString().slice(0, 10) === searchDate : true;
         const matchesTransactionType = searchTransactionType ? expense.transactionType === searchTransactionType : true;
-        return matchesCategory && matchesDate && matchesTransactionType;
+        const matchesYear = searchYear ? expenseDate.getFullYear().toString() === searchYear : true;
+        const matchesMonth = searchMonth ? (expenseDate.getMonth() + 1).toString().padStart(2, '0') === searchMonth : true;
+        
+        return matchesCategory && matchesDate && matchesTransactionType && matchesYear && matchesMonth;
     });
 
     // Memoize totals calculation
@@ -57,12 +65,12 @@ const ExpenseList = () => {
         return {
             totalExpense,
             totalIncome,
-            totalTurnover: totalIncome + totalExpense,
+            totalBalance: totalIncome - totalExpense,
         };
     }, [filteredExpenses]);  // Recalculate when filteredExpenses change
     
 
-    const { totalExpense, totalIncome, totalTurnover } = calculateTotals;
+    const { totalExpense, totalIncome, totalBalance } = calculateTotals;
 
 
 
@@ -76,9 +84,12 @@ const ExpenseList = () => {
         setSearchCategory('');
         setSearchDate('');
         setSearchTransactionType('');
+        setSearchYear('');
+        setSearchMonth('');
         setSortBy('date');
         setSortOrder('desc');
     };
+    
 
     const resetForm = () => {
         setCurrentExpense(null);
@@ -94,7 +105,7 @@ const ExpenseList = () => {
     const handleDelete = async (id) => {
         const token = localStorage.getItem('token');
         try {
-            await axios.delete(`https://expense-tracker-backend-q8tp.onrender.com/api/expenses/${id}`, {
+            await axios.delete(`${API_URL}/expenses/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setExpenses(expenses.filter(expense => expense._id !== id));
@@ -130,7 +141,7 @@ const ExpenseList = () => {
                 transactionType,
                 createdAt: date,
             };
-            await axios.put(`https://expense-tracker-backend-q8tp.onrender.com/api/expenses/${currentExpense._id}`, updatedExpense, {
+            await axios.put(`${API_URL}/expenses/${currentExpense._id}`, updatedExpense, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setExpenses(expenses.map(expense =>
@@ -166,6 +177,28 @@ const ExpenseList = () => {
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
+                    <select onChange={(e) => setSearchYear(e.target.value)} value={searchYear}>
+                        <option value="">All Years</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        {/* Add more years as needed */}
+                    </select>
+                    <select onChange={(e) => setSearchMonth(e.target.value)} value={searchMonth}>
+                        <option value="">All Months</option>
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
                     <input
                         type="date"
                         value={searchDate}
@@ -187,8 +220,15 @@ const ExpenseList = () => {
             <div className="totals">
                 <h3>Total Expense: ₹{totalExpense.toFixed(2)}</h3>
                 <h3>Total Income: ₹{totalIncome.toFixed(2)}</h3>
-                <h3>Total Turnover: ₹{totalTurnover.toFixed(2)}</h3>
+                <h3>
+                    Total Balance: 
+                    <span style={{ color: totalBalance >= 0 ? 'green' : 'red', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        {totalBalance >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                        ₹{Math.abs(totalBalance).toFixed(2)}
+                    </span>
+                </h3>
             </div>
+
 
             {sortedExpenses.length === 0 ? (
                 <p>No transactions found for the selected filters.</p>

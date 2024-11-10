@@ -23,5 +23,8 @@
     "mongoose": "^8.7.3",
     "nodemailer": "^6.9.16",
     "pdfkit": "^0.15.1"
+  },
+  "devDependencies": {
+    "@ljharb/tsconfig": "^0.2.0"
   }
 }
