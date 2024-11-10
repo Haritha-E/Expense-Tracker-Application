@@ -8,7 +8,7 @@ const MONTHS = [
 
 const MonthlyExpensesChart = ({ expenses, availableYears }) => {
     const sortedYears = availableYears.sort((a, b) => b - a); // Sort years in descending order
-    const [selectedYear, setSelectedYear] = useState(sortedYears[sortedYears.length - 1]); // Set the latest year as default
+    const [selectedYear, setSelectedYear] = useState(sortedYears[0]); // Set the latest year as default
     const [transactionType, setTransactionType] = useState('Expense');
 
     const handleYearChange = (event) => {
