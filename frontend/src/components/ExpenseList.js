@@ -38,6 +38,26 @@ const ExpenseList = () => {
         fetchExpenses();
     }, []);
 
+    const years = useMemo(() => {
+        const uniqueYears = new Set(expenses.map(expense => new Date(expense.createdAt).getFullYear()));
+        return Array.from(uniqueYears);
+    }, [expenses]);
+
+    const months = [
+        { value: '01', label: 'January' },
+        { value: '02', label: 'February' },
+        { value: '03', label: 'March' },
+        { value: '04', label: 'April' },
+        { value: '05', label: 'May' },
+        { value: '06', label: 'June' },
+        { value: '07', label: 'July' },
+        { value: '08', label: 'August' },
+        { value: '09', label: 'September' },
+        { value: '10', label: 'October' },
+        { value: '11', label: 'November' },
+        { value: '12', label: 'December' },
+    ];
+
     const filteredExpenses = expenses.filter(expense => {
         const expenseDate = new Date(expense.createdAt);
         const matchesCategory = searchCategory ? expense.category === searchCategory : true;
@@ -45,7 +65,6 @@ const ExpenseList = () => {
         const matchesTransactionType = searchTransactionType ? expense.transactionType === searchTransactionType : true;
         const matchesYear = searchYear ? expenseDate.getFullYear().toString() === searchYear : true;
         const matchesMonth = searchMonth ? (expenseDate.getMonth() + 1).toString().padStart(2, '0') === searchMonth : true;
-        
         return matchesCategory && matchesDate && matchesTransactionType && matchesYear && matchesMonth;
     });
 
@@ -179,25 +198,15 @@ const ExpenseList = () => {
                     </select>
                     <select onChange={(e) => setSearchYear(e.target.value)} value={searchYear}>
                         <option value="">All Years</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        {/* Add more years as needed */}
+                        {years.map(year => (
+                            <option key={year} value={year}>{year}</option>
+                        ))}
                     </select>
                     <select onChange={(e) => setSearchMonth(e.target.value)} value={searchMonth}>
                         <option value="">All Months</option>
-                        <option value="01">January</option>
-                        <option value="02">February</option>
-                        <option value="03">March</option>
-                        <option value="04">April</option>
-                        <option value="05">May</option>
-                        <option value="06">June</option>
-                        <option value="07">July</option>
-                        <option value="08">August</option>
-                        <option value="09">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
+                        {months.map(month => (
+                            <option key={month.value} value={month.value}>{month.label}</option>
+                        ))}
                     </select>
                     <input
                         type="date"

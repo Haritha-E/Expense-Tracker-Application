@@ -41,9 +41,9 @@ const App = () => {
               <div className="homepage">
                 <div className="card">
                   <Link to="/add-expense">
-                    <img src="https://t3.ftcdn.net/jpg/00/79/57/02/360_F_79570227_8hAFZ2EWXLq8kpjLqQXNmiAh4Fql8rI7.jpg" alt="Add Expense" style={{ width: '100%', height: 'auto' }} />
-                    <h3>Add Expense</h3>
-                    <button>Add Expense</button>
+                    <img src="https://t3.ftcdn.net/jpg/00/79/57/02/360_F_79570227_8hAFZ2EWXLq8kpjLqQXNmiAh4Fql8rI7.jpg" alt="Add Transaction" style={{ width: '100%', height: 'auto' }} />
+                    <h3>Add Transaction</h3>
+                    <button>Add Transaction</button>
                   </Link>
                 </div>
                 <div className="card">
