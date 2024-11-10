@@ -40,8 +40,8 @@ const ExpenseList = () => {
 
     const years = useMemo(() => {
         const uniqueYears = new Set(expenses.map(expense => new Date(expense.createdAt).getFullYear()));
-        return Array.from(uniqueYears);
-    }, [expenses]);
+        return Array.from(uniqueYears).sort((a, b) => b - a); // Sort years in descending order
+      }, [expenses]);      
 
     const months = [
         { value: '01', label: 'January' },
